@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"net/url"
 
+	"github.com/cihub/seelog"
 	"gopkg.in/olivere/elastic.v5/uritemplates"
 )
 
@@ -169,7 +170,10 @@ func (s *BulkService) NumberOfActions() int {
 
 func (s *BulkService) bodyAsString() (string, error) {
 	// Pre-allocate to reduce allocs
-	buf := bytes.NewBuffer(make([]byte, 0, s.EstimatedSizeInBytes()))
+	bufLen := s.EstimateSizeInBytes()
+	buf := bytes.NewBuffer(make([]byte, 0, bufLen))
+
+	seelog.Debugf("sending batch  - #docs: %d  bytes: %d", len(s.requests), bufLen)
 
 	for _, req := range s.requests {
 		source, err := req.Source()
@@ -193,6 +197,8 @@ func (s *BulkService) Do(ctx context.Context) (*BulkResponse, error) {
 	if s.NumberOfActions() == 0 {
 		return nil, errors.New("elastic: No bulk actions to commit")
 	}
+
+	seelog.Debugf("sending batch  - #docs: %d  bytes: %d", len(s.requests))
 
 	// Get body
 	body, err := s.bodyAsString()
