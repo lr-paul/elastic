@@ -198,8 +198,6 @@ func (s *BulkService) Do(ctx context.Context) (*BulkResponse, error) {
 		return nil, errors.New("elastic: No bulk actions to commit")
 	}
 
-	seelog.Debugf("sending batch  - #docs: %d  bytes: %d", len(s.requests))
-
 	// Get body
 	body, err := s.bodyAsString()
 	if err != nil {
